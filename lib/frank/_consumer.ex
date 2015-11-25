@@ -19,12 +19,12 @@ defmodule Frank.Consumer do
     {:ok, self}
   end
 
-  def link_connection(conn) do
+  defp link_connection(conn) do
     %AMQP.Connection{pid: pid} = conn
     Process.link(pid)
   end
 
-  def consume(channel, queue, fun) do
+  defp consume(channel, queue, fun) do
     consumer_pid = spawn fn -> do_start_consumer(channel, fun) end
     AMQP.Basic.consume(channel, queue, consumer_pid)
   end

@@ -19,7 +19,8 @@ defmodule Frank.Mixfile do
 
   defp deps do
     [
-      {:amqp, "0.1.4"}
+      {:amqp, "0.1.4"},
+      {:credo, "~> 0.1.9", only: [:dev, :test]},
     ]
   end
 
