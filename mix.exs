@@ -21,6 +21,7 @@ defmodule Frank.Mixfile do
     [
       {:amqp, "0.1.4"},
       {:credo, "~> 0.1.9", only: [:dev, :test]},
+      {:flaky_connection, git: "https://github.com/hamiltop/flaky_connection.git", only: :test},
     ]
   end
 

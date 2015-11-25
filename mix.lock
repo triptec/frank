@@ -2,4 +2,6 @@
   "amqp_client": {:hex, :amqp_client, "3.5.6"},
   "bunt": {:hex, :bunt, "0.1.4"},
   "credo": {:hex, :credo, "0.1.10"},
-  "rabbit_common": {:hex, :rabbit_common, "3.5.6"}}
+  "flaky_connection": {:git, "https://github.com/hamiltop/flaky_connection.git", "b6e7881ca2df2b1196971da1c8ba10f3e23ee518", []},
+  "rabbit_common": {:hex, :rabbit_common, "3.5.6"},
+  "ranch": {:hex, :ranch, "1.1.0"}}

@@ -1,5 +1,5 @@
+![Frank Logo](/images/logo.png)
 # Frank
-
 **TODO: Add description**
 
 ## Installation
