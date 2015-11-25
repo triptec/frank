@@ -27,7 +27,7 @@ defmodule Frank.Mixfile do
 
   defp description do
     """
-    Simple Elixir client for RabbitMQ built ontop of AMQP.
+    Simple Elixir client for RabbitMQ built on top of AMQP.
     """
   end
 
