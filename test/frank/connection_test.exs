@@ -35,7 +35,6 @@ defmodule Frank.ConnectionTest do
     first_msg = "continued subscription when connection lost first"
     second_msg = "continued subscription when connection lost second"
     fun = fn (payload, _meta) ->
-      IO.puts "GG!"
       send :frank_test, payload
     end
     Process.register(self, :frank_test)

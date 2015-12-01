@@ -8,6 +8,42 @@ defmodule Frank do
     {:ok, connection_manager_pid}
   end
 
+  def subscribe(uri, queue, exchange, fun) do
+    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
+    chan = Frank.Connection.channel(connection_manager_pid)
+    AMQP.Queue.declare chan, queue
+    AMQP.Exchange.declare chan, exchange
+    Frank.Subscriber.consume(chan, queue, fun)
+    {:ok, connection_manager_pid}
+  end
+
+  def subscribe(uri, %{name: queue, opts: queue_opts}, exchange, fun) do
+    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
+    chan = Frank.Connection.channel(connection_manager_pid)
+    AMQP.Queue.declare chan, queue, queue_opts
+    AMQP.Exchange.declare chan, exchange
+    Frank.Subscriber.consume(chan, queue, fun)
+    {:ok, connection_manager_pid}
+  end
+
+  def subscribe(uri, %{name: queue, opts: queue_opts}, %{name: exchange, opts: exchange_opts}, fun) do
+    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
+    chan = Frank.Connection.channel(connection_manager_pid)
+    AMQP.Queue.declare chan, queue, queue_opts
+    AMQP.Exchange.declare chan, exchange, exchange_opts
+    Frank.Subscriber.consume(chan, queue, fun)
+    {:ok, connection_manager_pid}
+  end
+
+  def subscribe(uri, queue, %{name: exchange, opts: exchange_opts}, fun) do
+    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
+    chan = Frank.Connection.channel(connection_manager_pid)
+    AMQP.Queue.declare chan, queue
+    AMQP.Exchange.declare chan, exchange, exchange_opts
+    Frank.Subscriber.consume(chan, queue, fun)
+    {:ok, connection_manager_pid}
+  end
+
   def publish(uri, routing_key, payload) when is_binary(uri) do
     name = String.to_atom(uri)
     pid = Process.whereis(name)
