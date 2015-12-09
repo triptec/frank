@@ -45,30 +45,34 @@ defmodule Frank do
   end
 
   def publish(uri, routing_key, payload) when is_binary(uri) do
+    publish(uri, "", routing_key, payload)
+  end
+
+  def publish(uri, exchange, routing_key, payload, opts \\ []) when is_binary(uri) do
     name = String.to_atom(uri)
     pid = Process.whereis(name)
     if pid do
       case Process.alive?(pid) do
         true ->
           chan = Frank.Connection.channel(name)
-          publish(chan, "", routing_key, payload)
+          publish_on_chan(chan, exchange, routing_key, payload, opts)
         false ->
-          connect_and_publish(uri, routing_key, payload)
+          connect_and_publish(uri, exchange, routing_key, payload, opts)
       end
     else
-      connect_and_publish(uri, routing_key, payload)
+      connect_and_publish(uri, exchange, routing_key, payload, opts)
     end
   end
 
-  defp publish(chan, exchange, routing_key, payload, opts \\ []) do
-    Frank.Publisher.publish(chan, "", routing_key, payload, opts)
+  defp publish_on_chan(chan, exchange, routing_key, payload, opts \\ []) do
+    Frank.Publisher.publish(chan, exchange, routing_key, payload, opts)
   end
 
-  defp connect_and_publish(uri, routing_key, payload) do
+  defp connect_and_publish(uri, exchange, routing_key, payload, opts) do
     name = String.to_atom(uri)
     {:ok, _} = Frank.Connection.start_link(uri, name: name)
     chan = Frank.Connection.channel(name)
-    publish(chan, "", routing_key, payload)
+    publish_on_chan(chan, exchange, routing_key, payload, opts)
   end
 end
 
