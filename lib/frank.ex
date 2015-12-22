@@ -8,26 +8,6 @@ defmodule Frank do
     {:ok, connection_manager_pid}
   end
 
-  def subscribe(uri, queue, exchange, fun) do
-    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
-    chan = Frank.Connection.channel(connection_manager_pid)
-    AMQP.Queue.declare chan, queue
-    AMQP.Exchange.declare chan, exchange
-    AMQP.Queue.bind chan, queue, exchange
-    Frank.Subscriber.consume(chan, queue, fun)
-    {:ok, connection_manager_pid}
-  end
-
-  def subscribe(uri, %{name: queue, opts: queue_opts}, exchange, fun) do
-    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
-    chan = Frank.Connection.channel(connection_manager_pid)
-    AMQP.Queue.declare chan, queue, queue_opts
-    AMQP.Exchange.declare chan, exchange
-    AMQP.Queue.bind chan, queue, exchange
-    Frank.Subscriber.consume(chan, queue, fun)
-    {:ok, connection_manager_pid}
-  end
-
   def subscribe(uri, %{name: queue, opts: queue_opts}, %{name: queue_error, opts: queue_error_opts}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun) do
     {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
     chan = Frank.Connection.channel(connection_manager_pid)
@@ -59,6 +39,26 @@ defmodule Frank do
     {:ok, connection_manager_pid}
   end
 
+  def subscribe(uri, %{name: queue, opts: queue_opts}, exchange, fun) do
+    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
+    chan = Frank.Connection.channel(connection_manager_pid)
+    AMQP.Queue.declare chan, queue, queue_opts
+    AMQP.Exchange.declare chan, exchange
+    AMQP.Queue.bind chan, queue, exchange
+    Frank.Subscriber.consume(chan, queue, fun)
+    {:ok, connection_manager_pid}
+  end
+
+  def subscribe(uri, queue, exchange, fun) do
+    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
+    chan = Frank.Connection.channel(connection_manager_pid)
+    AMQP.Queue.declare chan, queue
+    AMQP.Exchange.declare chan, exchange
+    AMQP.Queue.bind chan, queue, exchange
+    Frank.Subscriber.consume(chan, queue, fun)
+    {:ok, connection_manager_pid}
+  end
+
   def publish(uri, routing_key, payload) when is_binary(uri) do
     publish(uri, "", routing_key, payload)
   end
@@ -79,7 +79,7 @@ defmodule Frank do
     end
   end
 
-  defp publish_on_chan(chan, exchange, routing_key, payload, opts \\ []) do
+  defp publish_on_chan(chan, exchange, routing_key, payload, opts) do
     Frank.Publisher.publish(chan, exchange, routing_key, payload, opts)
   end
 

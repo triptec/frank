@@ -60,29 +60,29 @@ defmodule Frank.Connection do
   end
 
   def handle_call({:connection}, _from, state) do
-    [uri, [conn, chan]] = state
+    [_, [conn, _]] = state
     {:reply, conn, state}
   end
 
   def handle_call({:connection_pid}, _from, state) do
-    [uri, [conn, chan]] = state
+    [_, [conn, _]] = state
     %AMQP.Connection{pid: conn_pid} = conn
     {:reply, conn_pid, state}
   end
 
   def handle_call({:channel}, _from, state) do
-    [uri, [conn, chan]] = state
+    [_, [_, chan]] = state
     {:reply, chan, state}
   end
 
   def handle_call({:channel_pid}, _from, state) do
-    [uri, [conn, chan]] = state
+    [_, [_, chan]] = state
     %AMQP.Channel{conn: _, pid: chan_pid} = chan
     {:reply, chan_pid, state}
   end
 
   def handle_info({:DOWN, _, _, _, reason}, state) do
-    [uri, [conn, chan]] = state
+    [uri, [conn, _]] = state
     %AMQP.Connection{pid: conn_pid} = conn
     Logger.error "#{inspect self} connection to #{inspect conn_pid}: #{Process.alive?(conn_pid)}, reason: #{inspect reason}"
     Logger.info "Reconnecting.."
