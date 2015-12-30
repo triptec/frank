@@ -8,9 +8,10 @@ defmodule Frank do
     {:ok, connection_manager_pid}
   end
 
-  def subscribe(uri, %{name: queue, opts: queue_opts}, %{name: queue_error, opts: queue_error_opts}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun) do
+  def subscribe(uri, %{name: queue, opts: queue_opts}, %{name: queue_error, opts: queue_error_opts}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun, channel_opts) do
     {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
     chan = Frank.Connection.channel(connection_manager_pid)
+    AMQP.Basic.qos(chan, channel_opts)
     AMQP.Queue.declare chan, queue_error, queue_error_opts
     AMQP.Queue.declare chan, queue, queue_opts
     AMQP.Exchange.declare chan, exchange, exchange_type, exchange_opts
@@ -19,44 +20,35 @@ defmodule Frank do
     {:ok, connection_manager_pid}
   end
 
-  def subscribe(uri, %{name: queue, opts: queue_opts}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun) do
+  def subscribe(uri, %{name: queue, opts: queue_opts}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun, channel_opts) do
     {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
     chan = Frank.Connection.channel(connection_manager_pid)
+    AMQP.Basic.qos(chan, channel_opts)
     AMQP.Queue.declare chan, queue, queue_opts
     AMQP.Exchange.declare chan, exchange, exchange_type, exchange_opts
     AMQP.Queue.bind chan, queue, exchange
     Frank.Subscriber.consume(chan, queue, fun)
     {:ok, connection_manager_pid}
+  end
+
+  def subscribe(uri, %{name: queue, opts: queue_opts}, %{name: queue_error, opts: queue_error_opts}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun) do
+    subscribe(uri, %{name: queue, opts: queue_opts}, %{name: queue_error, opts: queue_error_opts}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun, [])
+  end
+
+  def subscribe(uri, %{name: queue, opts: queue_opts}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun) do
+    subscribe(uri, %{name: queue, opts: queue_opts}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun, [])
   end
 
   def subscribe(uri, queue, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun) do
-    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
-    chan = Frank.Connection.channel(connection_manager_pid)
-    AMQP.Queue.declare chan, queue
-    AMQP.Exchange.declare chan, exchange, exchange_type, exchange_opts
-    AMQP.Queue.bind chan, queue, exchange
-    Frank.Subscriber.consume(chan, queue, fun)
-    {:ok, connection_manager_pid}
+    subscribe(uri, %{name: queue, opts: []}, %{name: exchange, type: exchange_type, opts: exchange_opts}, fun)
   end
 
   def subscribe(uri, %{name: queue, opts: queue_opts}, exchange, fun) do
-    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
-    chan = Frank.Connection.channel(connection_manager_pid)
-    AMQP.Queue.declare chan, queue, queue_opts
-    AMQP.Exchange.declare chan, exchange
-    AMQP.Queue.bind chan, queue, exchange
-    Frank.Subscriber.consume(chan, queue, fun)
-    {:ok, connection_manager_pid}
+    subscribe(uri, %{name: queue, opts: queue_opts}, %{name: exchange, type: :direct, opts: []}, fun)
   end
 
   def subscribe(uri, queue, exchange, fun) do
-    {:ok, connection_manager_pid} = Frank.Connection.start_link(uri)
-    chan = Frank.Connection.channel(connection_manager_pid)
-    AMQP.Queue.declare chan, queue
-    AMQP.Exchange.declare chan, exchange
-    AMQP.Queue.bind chan, queue, exchange
-    Frank.Subscriber.consume(chan, queue, fun)
-    {:ok, connection_manager_pid}
+    subscribe(uri, %{name: queue, opts: []}, %{name: exchange, type: :direct, opts: []}, fun)
   end
 
   def publish(uri, routing_key, payload) when is_binary(uri) do
