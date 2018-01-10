@@ -7,10 +7,10 @@ defmodule Frank.Mixfile do
     [app: :frank,
      version: @version,
      elixir: "~> 1.1",
-     description: description,
-     package: package,
+     description: description(),
+     package: package(),
      source_url: "https://github.com/triptec/frank",
-     deps: deps]
+     deps: deps()]
   end
 
   def application do
@@ -19,7 +19,7 @@ defmodule Frank.Mixfile do
 
   defp deps do
     [
-      {:amqp, "0.1.4"},
+      {:amqp, "0.3.1"},
       {:credo, "~> 0.1.9", only: [:dev, :test]},
       {:flaky_connection, git: "https://github.com/hamiltop/flaky_connection.git", only: :test},
     ]
